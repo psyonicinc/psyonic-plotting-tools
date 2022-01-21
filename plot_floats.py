@@ -4,41 +4,20 @@ import numpy as np
 from matplotlib import animation
 from matplotlib import pyplot as plt
 
-bufwidth = 1000
-num_lines = 5
 
-
-fig,ax = plt.subplots()
-plt.setp(ax,ylim = (-1,1))	#manually set axis y limits
-plt.setp(ax,xlim = (0,50))
 lines = []
 xbuf = []
 ybuf = []
-#setup xy buffers to plot and axes
-for i in range(num_lines):
-	lines.append(ax.plot([],[])[0])
-	xbuf.append([])
-	ybuf.append([])
-#initalize all xy buffers to 0
-for i in range(0, num_lines):	
-	for j in range(0,bufwidth):
-		xbuf[i].append(0)
-		ybuf[i].append(0)
-		
-tstart = time.time()
+tstart = 0
+num_lines = 0
+bufwidth = 0
 
-#initialization function. needed for the 'blitting' option,
-#which is the lowest latency plotting option
-def init(): # required for blitting to give a clean slate.
-	for line in lines:
-		line.set_data([],[])
-	return lines
-
-
-
+#get the data and expose it to plotting
 def gen_points():
 	#IMPORTANT: must always first yield t/time
 	global tstart
+	global num_lines
+	
 	t = time.time() - tstart
 	
 	list = []
@@ -48,10 +27,21 @@ def gen_points():
 	
 	yield list	#first yield time
 
-	
+
+#initialization function. needed for the 'blitting' option,
+#which is the lowest latency plotting option
+def init(): # required for blitting to give a clean slate.
+	global lines
+		
+	for line in lines:
+		line.set_data([],[])
+	return lines
 
 
 def animate(args):
+
+	global ax, lines, xbuf, ybuf, num_lines, bufwidth
+
 	for i in range(0,num_lines):
 		del xbuf[i][0]
 		del ybuf[i][0]
@@ -71,8 +61,34 @@ def animate(args):
 	ax.relim()
 	ax.autoscale_view(scalex=False, scaley=False)
 	return lines
+
+def plot_floats(n, width):
 	
+	global fig, ax, lines, xbuf, ybuf, num_lines, bufwidth, tstart
+
+	fig,ax = plt.subplots()
+	plt.setp(ax,ylim = (-1,1))	#manually set axis y limits
+	plt.setp(ax,xlim = (0,50))
+
+	num_lines = n
+	bufwidth = width
 	
-	
-anim = animation.FuncAnimation(fig, animate, init_func=init, frames=gen_points, interval=0, blit=True,  save_count = 50)
-plt.show()
+	lines = []
+	xbuf = []
+	ybuf = []
+
+	#setup xy buffers to plot and axes
+	for i in range(num_lines):
+		lines.append(ax.plot([],[])[0])
+		xbuf.append([])
+		ybuf.append([])
+	#initalize all xy buffers to 0
+	for i in range(0, num_lines):	
+		for j in range(0,bufwidth):
+			xbuf[i].append(0)
+			ybuf[i].append(0)
+			
+	tstart = time.time()
+		
+	anim = animation.FuncAnimation(fig, animate, init_func=init, frames=gen_points, interval=0, blit=True,  save_count = 50)
+	plt.show()

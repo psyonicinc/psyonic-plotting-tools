@@ -62,7 +62,7 @@ def animate(args):
 	ax.autoscale_view(scalex=False, scaley=False)
 	return lines
 
-def plot_floats(n, width):
+def plot_floats(n, width, strategy):
 	
 	global fig, ax, lines, xbuf, ybuf, num_lines, bufwidth, tstart
 
@@ -90,5 +90,9 @@ def plot_floats(n, width):
 			
 	tstart = time.time()
 		
-	anim = animation.FuncAnimation(fig, animate, init_func=init, frames=gen_points, interval=0, blit=True,  save_count = 50)
-	plt.show()
+	if(strategy == "DEMO"):
+		anim = animation.FuncAnimation(fig, animate, init_func=init, frames=gen_points, interval=0, blit=True,  save_count = 50)
+		plt.show()
+	
+	
+	

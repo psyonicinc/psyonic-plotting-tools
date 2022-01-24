@@ -5,6 +5,7 @@ import struct
 import sys
 import threading
 from plot_floats import plot_floats
+import time
 
 UART_SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
 UART_RX_CHAR_UUID = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
@@ -13,6 +14,10 @@ UART_TX_CHAR_UUID = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 m_name = "PSYONIC-GANGGANG"
 num_lines = 4
 buf_width = 400
+gl_ble_data = []
+for i in range(0,num_lines):
+	gl_ble_data.append(0)
+tstart = time.time()
 
 queue = asyncio.Queue()
 
@@ -50,10 +55,15 @@ async def main():
 
 	def handle_rx(_: int, data: bytearray):
 		#print("received:", data)
-		farr = []
-		for i in range(0, len(data) // 4):
-			farr.append(struct.unpack('f', data[(4*i) : (4*i + 4)]))
-		print("received", farr)
+		global gl_ble_data
+		
+		datalen = len(data)
+		if(datalen > 0):
+			farr = []
+			for i in range(0, datalen // 4):
+				farr.append(struct.unpack('f', data[(4*i) : (4*i + 4)])[0])
+			#print(farr)
+			gl_ble_data = farr
 		
 	address = await get_address(m_name)
 	if(address):	
@@ -75,11 +85,31 @@ async def main():
 def ble_thread():
 	asyncio.run(main())
 	
+def expose_points():
+	global gl_ble_data
+	global tstart
+	
+	list = []
+	t = time.time() - tstart
+	list.append(t)
+	for d in gl_ble_data:
+		list.append(d)
+	yield list
+
+def plot_thread():
+	global gl_ble_data
+	#plot_floats(num_lines, buf_width, expose_points)
+	while True:
+		print(gl_ble_data)
 	
 if __name__ == "__main__":
 
 	t1 = threading.Thread(target=ble_thread, args=())
-	#t2 = threading.Thread(target=plot_floats, args=(num_lines, buf_width, 
+	t2 = threading.Thread(target=plot_thread, args=())
+	t2.start()
 	t1.start()
-	t1.join()
+	
+	#t1.join()
+	#t2.join()
+	
 

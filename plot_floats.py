@@ -12,22 +12,6 @@ tstart = 0
 num_lines = 0
 bufwidth = 0
 
-#get the data and expose it to plotting
-def gen_points():
-	#IMPORTANT: must always first yield t/time
-	global tstart
-	global num_lines
-	
-	t = time.time() - tstart
-	
-	list = []
-	list.append(t)
-	for i in range(0,num_lines):
-		list.append(np.sin(t+i))
-	
-	yield list	#first yield time
-
-
 #initialization function. needed for the 'blitting' option,
 #which is the lowest latency plotting option
 def init(): # required for blitting to give a clean slate.
@@ -62,7 +46,7 @@ def animate(args):
 	ax.autoscale_view(scalex=False, scaley=False)
 	return lines
 
-def plot_floats(n, width, strategy):
+def plot_floats(n, width, data_gen):
 	
 	global fig, ax, lines, xbuf, ybuf, num_lines, bufwidth, tstart
 
@@ -90,9 +74,9 @@ def plot_floats(n, width, strategy):
 			
 	tstart = time.time()
 		
-	if(strategy == "DEMO"):
-		anim = animation.FuncAnimation(fig, animate, init_func=init, frames=gen_points, interval=0, blit=True,  save_count = 50)
-		plt.show()
+
+	anim = animation.FuncAnimation(fig, animate, init_func=init, frames=data_gen, interval=0, blit=True,  save_count = 50)
+	plt.show()
 	
 	
 	

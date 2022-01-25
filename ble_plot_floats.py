@@ -12,7 +12,7 @@ UART_RX_CHAR_UUID = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
 UART_TX_CHAR_UUID = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
 m_name = "PSYONIC-GANGGANG"
-num_lines = 4
+num_lines = 3
 buf_width = 400
 gl_ble_data = []
 for i in range(0,num_lines):
@@ -57,13 +57,12 @@ async def main():
 		#print("received:", data)
 		global gl_ble_data
 		
-		datalen = len(data)
-		if(datalen > 0):
-			farr = []
-			for i in range(0, datalen // 4):
-				farr.append(struct.unpack('f', data[(4*i) : (4*i + 4)])[0])
-			#print(farr)
-			gl_ble_data = farr
+		datalen = len(data)		
+		farr = []
+		for i in range(0, datalen // 4):
+			farr.append(struct.unpack('f', data[(4*i) : (4*i + 4)])[0])
+		#print(farr)
+		gl_ble_data = farr
 		
 	address = await get_address(m_name)
 	if(address):	

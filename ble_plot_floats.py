@@ -94,13 +94,21 @@ def expose_points():
 	list.append(t)
 	for d in gl_ble_data:
 		list.append(d)
+	
+	#catch empty list. kludge
+	if(len(list) != (num_lines + 1)):
+		list = []
+		list.append(t)
+		for i in range(0,num_lines):
+			list.append(0)
+	
 	yield list
 
 def plot_thread():
 	global gl_ble_data
-	#plot_floats(num_lines, buf_width, expose_points)
-	while True:
-		print(gl_ble_data)
+	plot_floats(num_lines, buf_width, expose_points)
+	#while True:
+	#	print(gl_ble_data)
 	
 if __name__ == "__main__":
 

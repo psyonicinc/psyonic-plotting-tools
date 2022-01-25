@@ -38,10 +38,21 @@ def animate(args):
 	for i, line in enumerate(lines):
 		line.set_data(xbuf[i],ybuf[i])
 	
-	xmin = min(xbuf[0])
-	xmax = max(xbuf[0])
+	xmin = np.min(xbuf[0])
+	xmax = np.max(xbuf[0])
 	plt.setp(ax,xlim = (xmin,xmax))
-
+	
+	ymaxlist = []
+	for i in range(0,num_lines):
+		ymaxlist.append(np.max(ybuf[i]))
+	ymax = np.max(ymaxlist);
+	yminlist = []
+	for i in range(0,num_lines):
+		yminlist.append(np.min(ybuf[i]))
+	ymin = np.min(yminlist);
+	if(ymax > ymin):
+		plt.setp(ax,ylim=(ymin,ymax))
+	
 	ax.relim()
 	ax.autoscale_view(scalex=False, scaley=False)
 	return lines

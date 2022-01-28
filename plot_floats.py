@@ -41,7 +41,7 @@ def animate(args):
 	xmin = np.min(xbuf[0])
 	xmax = np.max(xbuf[0])
 	plt.setp(ax,xlim = (xmin,xmax))
-	
+	"""	
 	ymaxlist = []
 	for i in range(0,num_lines):
 		ymaxlist.append(np.max(ybuf[i]))
@@ -52,7 +52,7 @@ def animate(args):
 	ymin = np.min(yminlist);
 	if(ymax > ymin):
 		plt.setp(ax,ylim=(ymin,ymax))
-	
+	"""
 	ax.relim()
 	ax.autoscale_view(scalex=False, scaley=False)
 	return lines
@@ -62,7 +62,7 @@ def plot_floats(n, width, data_gen):
 	global fig, ax, lines, xbuf, ybuf, num_lines, bufwidth, tstart
 
 	fig,ax = plt.subplots()
-	plt.setp(ax,ylim = (-1,1))	#manually set axis y limits
+	plt.setp(ax,ylim = (-15000,15000))	#manually set axis y limits
 	plt.setp(ax,xlim = (0,50))
 
 	num_lines = n

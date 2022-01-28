@@ -81,7 +81,7 @@ def plot_lines(baud, bufWidth, numLines):
 
 
 if __name__ == "__main__":
-	params = [460800, 500, 3]
+	params = [460800, 500, 4]
 	if len(sys.argv) < 4:
 		print("Using Default Settings!")
 	else:

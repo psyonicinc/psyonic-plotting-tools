@@ -54,7 +54,7 @@ def plot_floats(n, width, data_gen):
 	plt.setp(ax,ylim = (0,4000))	#manually set axis y limits
 	plt.setp(ax,xlim = (0,30))
 
-	plt.title("Ability Hand Pressure Sensor Readings")
+	plt.title("Ability Hand Touch Sensor Readings")
 	plt.xlabel('Time(s)') 
 	plt.ylabel('Sensor Reading (12 bit)')
 	

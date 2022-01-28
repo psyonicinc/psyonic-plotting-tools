@@ -10,6 +10,7 @@ import sys
 num_lines = 0
 ser = []
 reset_count = 0
+total_count = 0
 tstart = 0
 
 def setupSerial(baud):
@@ -45,12 +46,12 @@ def readSerial():
 	global num_lines
 	global tstart
 	global reset_count
+	global total_count
 	
 	pressures = [0.0] * (1+num_lines)
 	prev_pressure = pressures.copy()
 	pos = [15., 15., 15., 15., 15., -15.]
 	while 1:
-		#time.sleep(0.01)
 		t = time.time() - tstart
 		msg = farr_to_barr(pos)
 		ser.write(msg)
@@ -73,6 +74,8 @@ def readSerial():
 					pressures[(2*i)+2] = int(data2)
 					if (data1 > 4000) or (data2 > 4000):
 						needReset = True
+		else: 
+			needReset = True
 			
 		if needReset:
 			ser.reset_input_buffer()	
@@ -81,6 +84,7 @@ def readSerial():
 			pressures = prev_pressure.copy()
 		
 		prev_pressure = pressures.copy()
+		total_count +=1
 		print(str(pressures))
 		yield pressures
 		
@@ -88,6 +92,7 @@ def readSerial():
 def plot_lines(baud, bufWidth, numLines):
 	global tstart
 	global num_lines
+	global total_count
 	num_lines = numLines
 	tstart = time.time()
 			
@@ -95,7 +100,8 @@ def plot_lines(baud, bufWidth, numLines):
 		plot_floats(num_lines, bufWidth, readSerial)
 		ser.close()		
 		print("Completed with " + str(reset_count) + " resets")
-
+		print("Total Runs: " + str(total_count))
+		print("Elapsed Time(s): " + str(time.time() - tstart))
 
 if __name__ == "__main__":
 	params = [460800, 500, 30]

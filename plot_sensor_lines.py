@@ -58,17 +58,21 @@ def readSerial():
 		pressures[0] = t
 		needReset = False
 		if len(data) == (71):
-			for i in range(0, int(num_lines/2)):
-				dualData = data[24+(i*3):24+((i*3)+3)]
-				data1 = struct.unpack('H', dualData[0:2])[0] & 0x0FFF
-				data2 = (struct.unpack('H', dualData[1:3])[0] & 0xFFF0) >> 4
-				pressures[(2*i)+1] = int(data1)
-				pressures[(2*i)+2] = int(data2)
-				if (data1 > 4000) or (data2 > 4000):
-					needReset = True
-		
-		if pressures[7] > 0 or pressures[8]:
-			needReset = True
+			sum = 0
+			for byte in data: 
+				sum = (sum + byte)%256
+			
+			if sum != 0:
+				needReset = 0
+			else:
+				for i in range(0, int(num_lines/2)):
+					dualData = data[24+(i*3):24+((i*3)+3)]
+					data1 = struct.unpack('H', dualData[0:2])[0] & 0x0FFF
+					data2 = (struct.unpack('H', dualData[1:3])[0] & 0xFFF0) >> 4
+					pressures[(2*i)+1] = int(data1)
+					pressures[(2*i)+2] = int(data2)
+					if (data1 > 4000) or (data2 > 4000):
+						needReset = True
 			
 		if needReset:
 			ser.reset_input_buffer()	

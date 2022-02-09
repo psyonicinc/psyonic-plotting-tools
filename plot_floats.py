@@ -46,13 +46,13 @@ def animate(args):
 	ax.autoscale_view(scalex=False, scaley=False)
 	return lines
 
-def plot_floats(n, width, data_gen):
+def plot_floats(n, width, xmax, ylim, data_gen):
 	
 	global fig, ax, lines, xbuf, ybuf, num_lines, bufwidth, tstart
 
 	fig,ax = plt.subplots()
-	plt.setp(ax,ylim = (-1,1))	#manually set axis y limits
-	plt.setp(ax,xlim = (0,50))
+	plt.setp(ax,ylim = ylim)	#manually set axis y limits
+	plt.setp(ax,xlim = (0,xmax))
 
 	num_lines = n
 	bufwidth = width

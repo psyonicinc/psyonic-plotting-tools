@@ -53,6 +53,7 @@ def plot_floats(n, width, xmax, ylim, data_gen):
 	fig,ax = plt.subplots()
 	plt.setp(ax,ylim = ylim)	#manually set axis y limits
 	plt.setp(ax,xlim = (0,xmax))
+	plt.grid(color = 'grey', linestyle = '--', linewidth = 0.5)
 
 	num_lines = n
 	bufwidth = width

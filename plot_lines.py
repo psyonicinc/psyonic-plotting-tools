@@ -14,7 +14,7 @@ reset_count = 0
 tstart = 0
 scaler = "none"
 
-scalingPresets = ["none", "cal"]
+scalingPresets = ["none", "cal", "peu"]
 
 def setupSerial(baud_set, timeout_set):
 	global ser
@@ -53,6 +53,19 @@ def scaleData(data):
 		for i in range(0, len(data)):
 			ret_data[i] = ((data[i] + math.pi) % (2 * math.pi)) - math.pi
 			if abs(ret_data[i]) > 1.0:
+				reset = True
+	elif scaler == "peu":
+		for i in range(0, len(data)):
+			if i == 1:
+				ret_data[i] = 2.25*(30.0/32.0)*data[i]
+			elif i == 2:
+				ret_data[i] =  2.25*(30.0/30.5)*data[i]
+			elif i == 3:
+				ret_data[i] = 2.25*(30.0/26.0)*data[i]
+			elif i == 4:
+				ret_data[i] = 2.25*(30.0/28.0)*data[i]
+				
+			if abs(ret_data[i]) > 1000:
 				reset = True
 	else:
 		for num in data:

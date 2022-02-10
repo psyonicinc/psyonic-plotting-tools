@@ -59,11 +59,13 @@ def scaleData(data):
 			if i == 1:
 				ret_data[i] = 2.25*(30.0/32.0)*data[i]
 			elif i == 2:
-				ret_data[i] =  2.25*(30.0/30.5)*data[i]
+				ret_data[i] = 2.25*(30.0/30.5)*data[i]
 			elif i == 3:
 				ret_data[i] = 2.25*(30.0/26.0)*data[i]
 			elif i == 4:
 				ret_data[i] = 2.25*(30.0/28.0)*data[i]
+			else:
+				ret_data = 2.25 * data[i]
 				
 			if abs(ret_data[i]) > 1000:
 				reset = True

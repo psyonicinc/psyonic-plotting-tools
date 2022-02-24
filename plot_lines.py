@@ -27,7 +27,7 @@ def setupSerial(baud_set, timeout_set):
 
 	for p in com_ports_list:
 		if(p):
-			if plaform.system() != 'Linux' or p[0] contains "USB":
+			if plaform.system() != 'Linux' or "USB" in p[0]:
 				port = p
 				print("Found:", port)
 			break

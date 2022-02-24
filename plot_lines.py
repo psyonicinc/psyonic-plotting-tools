@@ -7,6 +7,7 @@ import math
 import struct
 import sys
 import argparse
+import platform
 
 num_lines = 0
 ser = []
@@ -26,8 +27,9 @@ def setupSerial(baud_set, timeout_set):
 
 	for p in com_ports_list:
 		if(p):
-			port = p
-			print("Found:", port)
+			if plaform.system() != 'Linux' or p contains "USB":
+				port = p
+				print("Found:", port)
 			break
 	if not port:
 		print("No port found")
@@ -65,7 +67,7 @@ def scaleData(data):
 			elif i == 4:
 				ret_data[i] = 2.25*(30.0/28.0)*data[i]
 			else:
-				ret_data = 2.25 * data[i]
+				ret_data[i] = 2.25 * data[i]
 				
 			if abs(ret_data[i]) > 1000:
 				reset = True

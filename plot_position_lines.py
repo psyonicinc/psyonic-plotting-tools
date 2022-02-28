@@ -60,10 +60,10 @@ def readSerial():
 	dummymsg.append(chksum)
 
 	print("********************************************")
-	print("*  Press Space for Finger Wave             *")
-	print("*  Hold UP or W to Open Hand              *")
-	print("*  Hold DOWN or S to Close Hand           *")
-	print("*  Press Escape to Stop Movement           *")
+	print("*     Press Space for Finger Wave          *")
+	print("*     Hold UP or W to Open Hand            *")
+	print("*     Hold DOWN or S to Close Hand         *")
+	print("*     Press Escape to Stop Movement        *")
 	print("********************************************")
 
 	send_pos = [15., 15., 15., 15., 15., -15.]

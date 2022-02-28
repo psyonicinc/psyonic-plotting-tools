@@ -7,6 +7,7 @@ import numpy as np
 import struct
 import sys
 import math
+import keyboard
 
 num_lines = 0
 ser = []
@@ -49,17 +50,86 @@ def readSerial():
 	global reset_count
 	global total_count
 	
+	dummymsg = [];
+	dummymsg.append( (struct.pack('<B',0x50))[0] );	#device ID
+	dummymsg.append( (struct.pack('<B',0xAD))[0] );	#control mode
+	sum = 0
+	for b in dummymsg:
+		sum = sum + b
+	chksum = (-sum) & 0xFF;
+	dummymsg.append(chksum)
+
+	print("********************************************")
+	print("*  Press Space for Finger Wave             *")
+	print("*  Hold UP or W to Open Hand              *")
+	print("*  Hold DOWN or S to Close Hand           *")
+	print("*  Press Escape to Stop Movement           *")
+	print("********************************************")
+
 	send_pos = [15., 15., 15., 15., 15., -15.]
 	last_send_pos = send_pos.copy()
 	receive_pos = [0] * 7
 	last_receive_pos = receive_pos.copy()
+	fingerwave = False
+	up = False
+	down = False
+	space_once = True
+	rate = 0
 	while 1:
-		t = time.time() - tstart
-		for i in range(0, len(send_pos)):
-			ft = time.time()*3 + i
-			send_pos[i] = (.5*math.sin(ft)+.5)*45+15
-		send_pos[5] = -send_pos[5]
+		## Check for keyboard
+		if keyboard.is_pressed('space'):
+			fingerwave = True
+			up = False
+			down = False
+			rate = 0
+		elif keyboard.is_pressed('esc'):
+			fingerwave = False
+			up = False
+			down = False
+			rate = 0
+		elif keyboard.is_pressed('up') or keyboard.is_pressed('w'):
+			fingerwave = False
+			up = True
+			down = False
+			rate = rate + 1
+		elif keyboard.is_pressed('down') or keyboard.is_pressed('s'):
+			fingerwave = False
+			up = False
+			down = True
+			rate = rate + 1
+		else:
+			rate = 0
+			up = False
+			down = False
+	
+		t = time.time() - tstart	
+		if fingerwave:
+			for i in range(0, len(send_pos)):
+				ft = time.time()*3 + i
+				send_pos[i] = (.5*math.sin(ft)+.5)*45+15
+			send_pos[5] = -send_pos[5]
+		elif up:
+			for i in range(0, len(send_pos)):
+				send_pos[i] = last_send_pos[i] - max((0.1 * rate / 10), 1)
+				if send_pos[i] < 5:
+					send_pos[i] = 5
+			send_pos[5] = -send_pos[5]
+		elif down:
+			for i in range(0, len(send_pos)):
+				send_pos[i] = last_send_pos[i] + max((0.1 * rate / 10), 1)
+				if send_pos[i] > 90:
+					send_pos[i] = 90
+					
+			if send_pos[4] > 50:
+				send_pos[4] = 50
+			if send_pos[5] > 50:
+				send_pos[5] = 50
+			send_pos[5] = -send_pos[5]
+			
+			
 		msg = farr_to_barr(send_pos)
+
+		#print(str(send_pos))
 		ser.write(msg)
 		data = ser.read(71)
 		receive_pos[0] = t
@@ -87,10 +157,11 @@ def readSerial():
 			receive_pos = last_receive_pos.copy()
 		
 		last_send_pos = send_pos.copy()
+		last_send_pos[5] = -last_send_pos[5]
 		last_receive_pos = receive_pos.copy()
 		total_count +=1
 		ser.reset_input_buffer()
-		print(str(receive_pos))
+		#print(str(receive_pos))
 		yield receive_pos
 		
 
@@ -100,7 +171,7 @@ def plot_lines(baud, bufWidth, numLines):
 	global total_count
 	num_lines = numLines
 	tstart = time.time()
-			
+		
 	if setupSerial(baud):
 		plot_floats(num_lines, bufWidth, readSerial)
 		ser.close()		

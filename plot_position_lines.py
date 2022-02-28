@@ -110,13 +110,13 @@ def readSerial():
 			send_pos[5] = -send_pos[5]
 		elif up:
 			for i in range(0, len(send_pos)):
-				send_pos[i] = last_send_pos[i] - max((0.1 * rate / 10), 1)
+				send_pos[i] = last_send_pos[i] - max((0.25 * rate / 10), 1)
 				if send_pos[i] < 5:
 					send_pos[i] = 5
 			send_pos[5] = -send_pos[5]
 		elif down:
 			for i in range(0, len(send_pos)):
-				send_pos[i] = last_send_pos[i] + max((0.1 * rate / 10), 1)
+				send_pos[i] = last_send_pos[i] + max((0.25 * rate / 10), 1)
 				if send_pos[i] > 90:
 					send_pos[i] = 90
 					

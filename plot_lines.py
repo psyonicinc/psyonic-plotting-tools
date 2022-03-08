@@ -119,7 +119,6 @@ def readSerial():
 			data = ser.read(bufferLength)
 		final_data[0] = t
 		needReset = False
-		print(data.hex())
 		if len(data) == (bufferLength):
 			if parser == "float":
 				for i in range(0, num_lines):

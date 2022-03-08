@@ -14,8 +14,10 @@ ser = []
 reset_count = 0
 tstart = 0
 scaler = "none"
+parser = "float"
 
-scalingPresets = ["none", "cal", "peu"]
+scalingPresets = ["none", "cal", "peu", "fsr"]
+parsingPresets = ["float", "12bit"]
 
 def setupSerial(baud_set, timeout_set):
 	global ser
@@ -27,7 +29,7 @@ def setupSerial(baud_set, timeout_set):
 
 	for p in com_ports_list:
 		if(p):
-			if plaform.system() != 'Linux' or "USB" in p[0]:
+			if platform.system() != 'Linux' or "USB" in p[0]:
 				port = p
 				print("Found:", port)
 			break
@@ -71,6 +73,10 @@ def scaleData(data):
 				
 			if abs(ret_data[i]) > 1000:
 				reset = True
+	elif scaler == "fsr":
+		for num in data:
+			if num < 0 or num > 4100:
+				reset = True
 	else:
 		for num in data:
 			if abs(num) > 1000 or abs(num) < 0.000001:
@@ -83,27 +89,50 @@ def readSerial():
 	global num_lines
 	global tstart
 	global reset_count
+	global parser
+	global dummy_reads
 	
 	parsed_data = [0.0] * (num_lines)
 	final_data = [0.0] * (1+num_lines)
 	
+	# Default for floats
+	bufferLength = int(4 * num_lines)
+	if parser == "12bit":
+		bufferLength = int(math.ceil((1.5 * num_lines)) + 1)
+	
+	print("Read Length: " + str(bufferLength))
+	
 	while 1:
 	
 		t = time.time() - tstart
-		data = ser.read(4*num_lines)
+		for i in range(0,dummy_reads + 1):
+			data = ser.read(bufferLength)
 		final_data[0] = t
 		needReset = False
-		if len(data) == (4*num_lines):
-			for i in range(0, num_lines):
-				parsed_data[i]=struct.unpack('f', data[(4*i):(4*i + 4)])[0]
-		
-		needReset, ret_data = scaleData(parsed_data)
+		if len(data) == (bufferLength):
+			if parser == float:
+				for i in range(0, num_lines):
+					parsed_data[i]=struct.unpack('f', data[(4*i):(4*i + 4)])[0]
+			elif parser == "12bit":
+				for i in range(0, int(math.ceil(num_lines/2))):
+					dualData = data[i * 3:(i + 1) * 3]
+					data1 = struct.unpack('H', dualData[0:2])[0] & 0x0FFF
+					data2 = (struct.unpack('H', dualData[1:3])[0] & 0xFFF0) >> 4
+					parsed_data[2*i] =  int(data1)
+					parsed_data[(2*i)+1] = int(data2)
+			
+			needReset, ret_data = scaleData(parsed_data)
+		else:
+			print("Data len: " + str(len(data)))
+			needReset = True
+			ret_data = parsed_data.copy()
+	
 		
 		for i in range(0, num_lines):
 			final_data[i+1] = ret_data[i]
 		
 		if needReset:
-			ser.reset_input_buffer()	
+			ser.reset_input_buffer()
 			reset_count+=1
 			needReset = False
 			
@@ -111,15 +140,20 @@ def readSerial():
 		yield final_data
 		
 
-def plot_lines(baud, timeout, bufWidth, numLines, xmax, ylims, scaling):
+def plot_lines(baud, timeout, bufWidth, numLines, xmax, ylims, scaling, parsing, discard):
 	global tstart
 	global num_lines
 	global scaler
+	global parser
+	global dummy_reads
 	num_lines = numLines
 	tstart = time.time()
 	scaler = scaling
+	parser = parsing
+	dummy_reads = discard
 			
 	if setupSerial(baud, timeout):
+		ser.reset_input_buffer()
 		plot_floats(num_lines, bufWidth, xmax, ylims, readSerial)
 		ser.close()		
 		print("Completed with " + str(reset_count) + " resets")
@@ -137,6 +171,8 @@ if __name__ == "__main__":
 	parser.add_argument('--ymin', type=float, help="Y Scale Minimum", default = -1.0)
 	parser.add_argument('--ymax', type=float, help="Y Scale Maximum", default = 1.0)
 	parser.add_argument('--scaler', help="Prescaling to do on data", choices=scalingPresets, default="none")
+	parser.add_argument('--parser' , help="How to parse raw serial data", choices=parsingPresets, default="float")
+	parser.add_argument('--discard', type=int, help="Number of Dummy Reads to do to discard data", default=0)
 	args = parser.parse_args()
 	
 	## Check Validity
@@ -162,6 +198,7 @@ if __name__ == "__main__":
 	print("Number of Seconds to show: " + str(args.width))
 	print("Y values in range: " + str(ytuple))
 	print("Using Scaler: " + str(args.scaler))
+	print("Using Parser: " + str(args.parser))
 	print("Serial Timeout: " + str(timeout))
 	
 	print("Starting", end="")
@@ -171,4 +208,4 @@ if __name__ == "__main__":
 	print(".")
 	
 	
-	plot_lines(args.baud, timeout, args.buffer, args.number, args.width, ytuple, args.scaler)  
+	plot_lines(args.baud, timeout, args.buffer, args.number, args.width, ytuple, args.scaler, args.parser, args.discard)  

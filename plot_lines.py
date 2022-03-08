@@ -15,8 +15,9 @@ reset_count = 0
 tstart = 0
 scaler = "none"
 parser = "float"
+checksum = False
 
-scalingPresets = ["none", "cal", "peu", "fsr"]
+scalingPresets = ["none", "cal", "peu", "fsr", "aenc"]
 parsingPresets = ["float", "12bit"]
 
 def setupSerial(baud_set, timeout_set):
@@ -77,6 +78,11 @@ def scaleData(data):
 		for num in data:
 			if num < 0 or num > 4100:
 				reset = True
+	elif scaler == "aenc":
+		for i in range(0, len(data)):
+			ret_data[i] = (data[i] + math.pi) % (2*math.pi) - math.pi;
+			if (abs(data[i])) > 1000:
+				reset = True
 	else:
 		for num in data:
 			if abs(num) > 1000 or abs(num) < 0.000001:
@@ -91,6 +97,7 @@ def readSerial():
 	global reset_count
 	global parser
 	global dummy_reads
+	global checksum
 	
 	parsed_data = [0.0] * (num_lines)
 	final_data = [0.0] * (1+num_lines)
@@ -98,7 +105,10 @@ def readSerial():
 	# Default for floats
 	bufferLength = int(4 * num_lines)
 	if parser == "12bit":
-		bufferLength = int(math.ceil((1.5 * num_lines)) + 1)
+		bufferLength = int(math.ceil((1.5 * num_lines)))
+		
+	if checksum:
+		bufferLength = bufferLength + 1
 	
 	print("Read Length: " + str(bufferLength))
 	
@@ -109,8 +119,9 @@ def readSerial():
 			data = ser.read(bufferLength)
 		final_data[0] = t
 		needReset = False
+		print(data.hex())
 		if len(data) == (bufferLength):
-			if parser == float:
+			if parser == "float":
 				for i in range(0, num_lines):
 					parsed_data[i]=struct.unpack('f', data[(4*i):(4*i + 4)])[0]
 			elif parser == "12bit":
@@ -123,11 +134,9 @@ def readSerial():
 			
 			needReset, ret_data = scaleData(parsed_data)
 		else:
-			print("Data len: " + str(len(data)))
 			needReset = True
 			ret_data = parsed_data.copy()
 	
-		
 		for i in range(0, num_lines):
 			final_data[i+1] = ret_data[i]
 		
@@ -140,17 +149,19 @@ def readSerial():
 		yield final_data
 		
 
-def plot_lines(baud, timeout, bufWidth, numLines, xmax, ylims, scaling, parsing, discard):
+def plot_lines(baud, timeout, bufWidth, numLines, cs, xmax, ylims, scaling, parsing, discard):
 	global tstart
 	global num_lines
 	global scaler
 	global parser
 	global dummy_reads
+	global checksum
 	num_lines = numLines
 	tstart = time.time()
 	scaler = scaling
 	parser = parsing
 	dummy_reads = discard
+	checksum = cs
 			
 	if setupSerial(baud, timeout):
 		ser.reset_input_buffer()
@@ -166,6 +177,7 @@ if __name__ == "__main__":
 	parser.add_argument('-b', '--baud', type=int, help="Serial Baud Rate", default=460800)
 	parser.add_argument('--buffer', type=int, help="Data Buffer Size", default=500)
 	parser.add_argument('-n', '--number', type=int, help="Number of Lines", default=3)
+	parser.add_argument('-c', help="Include flag if data has checksum byte", action='store_true')
 	parser.add_argument('-w', '--width', type=float, help="X Width of Plot (s)", default = 50)
 	parser.add_argument('-t', '--timeout', type=int, help="Serial Timeout (ms)", default = 0)
 	parser.add_argument('--ymin', type=float, help="Y Scale Minimum", default = -1.0)
@@ -208,4 +220,4 @@ if __name__ == "__main__":
 	print(".")
 	
 	
-	plot_lines(args.baud, timeout, args.buffer, args.number, args.width, ytuple, args.scaler, args.parser, args.discard)  
+	plot_lines(args.baud, timeout, args.buffer, args.number, args.c, args.width, ytuple, args.scaler, args.parser, args.discard)  

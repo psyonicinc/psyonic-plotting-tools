@@ -51,12 +51,12 @@ def plot_floats(n, width, data_gen):
 	global fig, ax, lines, xbuf, ybuf, num_lines, bufwidth, tstart
 
 	fig,ax = plt.subplots()
-	plt.setp(ax,ylim = (0,4000))	#manually set axis y limits
+	plt.setp(ax,ylim = (0,100))	#manually set axis y limits
 	plt.setp(ax,xlim = (0,30))
 
-	plt.title("Ability Hand Touch Sensor Readings")
+	plt.title("Ability Hand Position Readings")
 	plt.xlabel('Time(s)') 
-	plt.ylabel('Sensor Reading (12 bit)')
+	plt.ylabel('Sensor Reading (Degrees)')
 	
 	num_lines = n
 	bufwidth = width

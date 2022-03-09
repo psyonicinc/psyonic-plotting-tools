@@ -28,15 +28,18 @@ def setupSerial(baud_set, timeout_set):
 	com_ports_list = list(list_ports.comports())
 	port = ""
 
-	if platform.system() == 'Linux':
-		port = ["/dev/ttyUSB0"]
-		print("Linux port hardcoded to: ", port)
-	else:
-		for p in com_ports_list:
-			if(p):
-				port = p
-				print("Found:", port)
-				break
+	for p in com_ports_list:
+		if(p):
+			if platform.system() == 'Linux':
+				if "USB" in p[0]:
+					port = p
+					print("Found:", port)
+					break
+			elif platform.system() == 'Windows':
+				if "COM" in p[0]:
+					port = p
+					print("Found:", port)
+					break
 	if not port:
 		print("No port found")
 		quit()

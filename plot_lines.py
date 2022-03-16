@@ -67,13 +67,13 @@ def scaleData(data):
 				reset = True
 	elif scaler == "peu":
 		for i in range(0, len(data)):
-			if i == 1:
+			if i == 0:
 				ret_data[i] = 2.25*(30.0/32.0)*data[i]
-			elif i == 2:
+			elif i == 1:
 				ret_data[i] = 2.25*(30.0/30.5)*data[i]
-			elif i == 3:
+			elif i == 2:
 				ret_data[i] = 2.25*(30.0/26.0)*data[i]
-			elif i == 4:
+			elif i == 3:
 				ret_data[i] = 2.25*(30.0/28.0)*data[i]
 			else:
 				ret_data[i] = 2.25 * data[i]

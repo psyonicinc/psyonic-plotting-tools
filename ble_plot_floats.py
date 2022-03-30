@@ -11,15 +11,18 @@ UART_SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
 UART_RX_CHAR_UUID = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
 UART_TX_CHAR_UUID = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
-m_name = "PSYONIC-21ABH035"
+m_name = "PSYONIC-RUDE_BOY"
 num_lines = 6
 buf_width = 400
 gl_ble_data = []
+gl_new_data_flag = 0
 for i in range(0,num_lines):
 	gl_ble_data.append(0)
 tstart = time.time()
 
 queue = asyncio.Queue()
+
+
 
 def detection_callback(device, advertisement_data):
 	name = advertisement_data.local_name
@@ -56,6 +59,7 @@ async def main():
 	def handle_rx(_: int, data: bytearray):
 		#print("received:", data)
 		global gl_ble_data
+		global gl_new_data_flag
 		
 		datalen = len(data)		
 		farr = []
@@ -63,6 +67,7 @@ async def main():
 			farr.append(struct.unpack('f', data[(4*i) : (4*i + 4)])[0])
 		#print(farr)
 		gl_ble_data = farr
+		gl_new_data_flag = 1
 		
 	address = await get_address(m_name)
 	if(address):	
@@ -86,7 +91,12 @@ def ble_thread():
 	
 def expose_points():
 	global gl_ble_data
+	global gl_new_data_flag
 	global tstart
+	
+	
+	while gl_new_data_flag == 0:
+		pass
 	
 	list = []
 	t = time.time() - tstart
@@ -102,10 +112,11 @@ def expose_points():
 			list.append(0)
 	
 	yield list
+	gl_new_data_flag = 0
 
 def plot_thread():
 	global gl_ble_data
-	plot_floats(num_lines, buf_width, expose_points)
+	plot_floats(num_lines, buf_width, expose_points, (-6000,6000))
 	#while True:
 	#	print(gl_ble_data)
 	

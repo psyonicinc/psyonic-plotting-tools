@@ -62,7 +62,8 @@ def scaleData(data):
 	
 	if scaler == "cal":
 		for i in range(0, len(data)):
-			ret_data[i] = ((data[i] + math.pi) % (2 * math.pi)) - math.pi
+			#ret_data[i] = np.remainder( (data[i] + np.pi), 2*np.pi) - np.pi
+			ret_data[i] = data[i];
 			if abs(ret_data[i]) > 1.0:
 				reset = True
 	elif scaler == "peu":

@@ -62,10 +62,17 @@ def scaleData(data):
 	
 	if scaler == "cal":
 		for i in range(0, len(data)):
-			#ret_data[i] = np.remainder( (data[i] + np.pi), 2*np.pi) - np.pi
 			ret_data[i] = data[i];
 			if abs(ret_data[i]) > 1.0:
-				reset = True
+				reset = True	
+		u = data[0]
+		thresh = data[1]
+		if(u >= thresh):
+			ret_data[0] = np.log( (u - thresh) + 1 ) / np.log(10000) + thresh
+		elif (u <= -thresh):
+			ret_data[0] = - (np.log( (-u - thresh) + 1 ) / np.log(10000) + thresh)
+			
+		
 	elif scaler == "peu":
 		for i in range(0, len(data)):
 			if i == 0:
@@ -105,6 +112,7 @@ def readSerial():
 	global parser
 	global dummy_reads
 	global checksum
+	global scaler
 	
 	parsed_data = [0.0] * (num_lines)
 	final_data = [0.0] * (1+num_lines)
@@ -151,7 +159,24 @@ def readSerial():
 			reset_count+=1
 			needReset = False
 			
-		print(str(final_data))
+		#manage printing to console option	
+		if(scaler == "cal"):
+			str_possible = ""
+			for d in data:
+				if(d != 0):
+					str_possible = str_possible + chr(d)
+			if(str_possible.find("PASS") != -1 or str_possible.find("FAIL") != -1):
+				print(str_possible)
+			else:
+				d_data = final_data.copy()
+				for i in range(1, 5):	
+					d_data[i] = int(parsed_data[i - 1] * 4096)
+				print(str(d_data))
+				
+		else:
+			print(str(final_data))
+		
+		
 		yield final_data
 		
 

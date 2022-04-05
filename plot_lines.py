@@ -169,9 +169,13 @@ def readSerial():
 				print(str_possible)
 			else:
 				d_data = final_data.copy()
-				for i in range(1, 5):	
-					d_data[i] = int(parsed_data[i - 1] * 4096)
-				print(str(d_data))
+				#for i in range(1, 5):	
+					#d_data[i] = int(parsed_data[i - 1] * 4096)
+				d_data[2] = int(parsed_data[1]*4096)
+				d_data[3] = int(parsed_data[2]*4096)
+				d_data[4] = int(parsed_data[3]*4096)
+				pstr = str(d_data)
+				print(pstr)
 				
 		else:
 			print(str(final_data))

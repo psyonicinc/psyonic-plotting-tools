@@ -106,7 +106,7 @@ def readSerial():
 	global checksum
 	
 	parsed_data = [0.0] * (num_lines)
-	final_data = [0.0] * (1+num_lines)
+	final_data = [0.0] * (2+num_lines)
 	
 	# Default for floats
 	bufferLength = int(4 * num_lines)
@@ -150,6 +150,15 @@ def readSerial():
 			reset_count+=1
 			needReset = False
 			
+		last_pos = len(final_data) -1
+		if t > 11:
+			final_data[last_pos] = 1
+		elif t > 5:
+			final_data[last_pos] = 2
+		else:
+			final_data[last_pos] = 0
+			
+			
 		print(str(final_data))
 		yield final_data
 		
@@ -170,7 +179,7 @@ def plot_lines(baud, timeout, bufWidth, numLines, cs, xmax, ylims, scaling, pars
 			
 	if setupSerial(baud, timeout):
 		ser.reset_input_buffer()
-		plot_floats(num_lines, bufWidth, xmax, ylims, readSerial)
+		plot_floats(num_lines, bufWidth, xmax, ylims, readSerial, True)
 		ser.close()		
 		print("Completed with " + str(reset_count) + " resets")
 

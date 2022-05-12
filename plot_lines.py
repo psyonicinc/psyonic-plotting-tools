@@ -16,6 +16,7 @@ tstart = 0
 scaler = "none"
 parser = "float"
 checksum = False
+check_pass = False
 
 scalingPresets = ["none", "cal", "peu", "fsr", "aenc"]
 parsingPresets = ["float", "12bit"]
@@ -62,10 +63,17 @@ def scaleData(data):
 	
 	if scaler == "cal":
 		for i in range(0, len(data)):
-			#ret_data[i] = np.remainder( (data[i] + np.pi), 2*np.pi) - np.pi
 			ret_data[i] = data[i];
 			if abs(ret_data[i]) > 1.0:
-				reset = True
+				reset = True	
+		u = data[0]
+		thresh = data[1]
+		if(u >= thresh):
+			ret_data[0] = np.log( (u - thresh) + 1 ) / np.log(10000) + thresh
+		elif (u <= -thresh):
+			ret_data[0] = - (np.log( (-u - thresh) + 1 ) / np.log(10000) + thresh)
+			
+		
 	elif scaler == "peu":
 		for i in range(0, len(data)):
 			if i == 0:
@@ -105,9 +113,11 @@ def readSerial():
 	global parser
 	global dummy_reads
 	global checksum
+	global scaler
+	global check_pass
 	
 	parsed_data = [0.0] * (num_lines)
-	final_data = [0.0] * (1+num_lines)
+	final_data = [0.0] * (2+num_lines)
 	
 	# Default for floats
 	bufferLength = int(4 * num_lines)
@@ -151,27 +161,47 @@ def readSerial():
 			reset_count+=1
 			needReset = False
 			
+		#manage printing to console option	
+		if check_pass:
+			str_possible = ""
+			for d in data:
+				if(d != 0):
+					str_possible = str_possible + chr(d)
+			if(str_possible.find("PASS") != -1 or str_possible.find("FAIL") != -1):
+				if(str_possible.find("PASS") != -1):
+					final_data[-1] = int(str_possible[7:10])
+				else:
+					final_data[-1] = -2
+				
+				print(str_possible)
+			else:
+				final_data[-1] = -1		
+				
 		print(str(final_data))
+		
+		
 		yield final_data
 		
 
-def plot_lines(baud, timeout, bufWidth, numLines, cs, xmax, ylims, scaling, parsing, discard):
+def plot_lines(baud, timeout, bufWidth, numLines, cs, xmax, ylims, scaling, parsing, discard, passmsg):
 	global tstart
 	global num_lines
 	global scaler
 	global parser
 	global dummy_reads
 	global checksum
+	global check_pass
 	num_lines = numLines
 	tstart = time.time()
 	scaler = scaling
 	parser = parsing
 	dummy_reads = discard
 	checksum = cs
-			
+	check_pass = passmsg
+	
 	if setupSerial(baud, timeout):
 		ser.reset_input_buffer()
-		plot_floats(num_lines, bufWidth, xmax, ylims, readSerial)
+		plot_floats(num_lines, bufWidth, xmax, ylims, readSerial, check_pass)
 		ser.close()		
 		print("Completed with " + str(reset_count) + " resets")
 
@@ -191,6 +221,7 @@ if __name__ == "__main__":
 	parser.add_argument('--scaler', help="Prescaling to do on data", choices=scalingPresets, default="none")
 	parser.add_argument('--parser' , help="How to parse raw serial data", choices=parsingPresets, default="float")
 	parser.add_argument('--discard', type=int, help="Number of Dummy Reads to do to discard data", default=0)
+	parser.add_argument('--passfail' , help="Include flag to check for pass/fail messages", action='store_true')
 	args = parser.parse_args()
 	
 	## Check Validity
@@ -219,6 +250,9 @@ if __name__ == "__main__":
 	print("Using Parser: " + str(args.parser))
 	print("Serial Timeout: " + str(timeout))
 	
+	if args.passfail:
+		print("Checking for Pass/Fail Messages")
+	
 	print("Starting", end="")
 	for i in range(0,4):
 		print(".", end="", flush=True)
@@ -226,4 +260,4 @@ if __name__ == "__main__":
 	print(".")
 	
 	
-	plot_lines(args.baud, timeout, args.buffer, args.number, args.c, args.width, ytuple, args.scaler, args.parser, args.discard)  
+	plot_lines(args.baud, timeout, args.buffer, args.number, args.c, args.width, ytuple, args.scaler, args.parser, args.discard, args.passfail)  

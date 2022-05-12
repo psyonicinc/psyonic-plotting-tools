@@ -26,7 +26,7 @@ def init(): # required for blitting to give a clean slate.
 def animate(args):
 
 	global ax, lines, xbuf, ybuf, num_lines, bufwidth
-	global label, pf
+	global label, pf, text_height
 
 	for i in range(0,num_lines):
 		del xbuf[i][0]
@@ -41,10 +41,10 @@ def animate(args):
 		line.set_data(xbuf[i],ybuf[i])
 	
 	if(pf):
-		if args[num_lines+1] == 1:
-			label.set_text("Pass")
+		if args[-1] >= 0:
+			label.set_text("Pass: " + str(args[-1]))
 			label.set_color("Green")
-		elif args[num_lines+1] == 2:
+		elif args[-1] == -2:
 			label.set_text("FAIL!!")
 			label.set_color("Red")
 		else: 
@@ -55,7 +55,7 @@ def animate(args):
 	xmin = min(xbuf[0])
 	xmax = max(xbuf[0])
 	plt.setp(ax,xlim = (xmin,xmax))
-
+	label.set_position(((xmax-xmin)/2 + xmin, text_height))
 	ax.relim()
 	ax.autoscale_view(scalex=False, scaley=False)
 	return lines
@@ -63,7 +63,7 @@ def animate(args):
 def plot_floats(n, width, xmax, ylim, data_gen, pass_fail):
 	
 	global fig, ax, lines, xbuf, ybuf, num_lines, bufwidth, tstart
-	global label, pf
+	global label, pf, text_height
 	
 	pf = pass_fail
 
@@ -96,7 +96,6 @@ def plot_floats(n, width, xmax, ylim, data_gen, pass_fail):
 			
 	tstart = time.time()
 		
-
 	anim = animation.FuncAnimation(fig, animate, init_func=init, frames=data_gen, interval=0, blit=False,  save_count = 50)
 	plt.show()
 	

@@ -169,13 +169,13 @@ def readSerial():
 					str_possible = str_possible + chr(d)
 			if(str_possible.find("PASS") != -1 or str_possible.find("FAIL") != -1):
 				if(str_possible.find("PASS") != -1):
-					final_data[-1] = 1
+					final_data[-1] = int(str_possible[7:10])
 				else:
-					final_data[-1] = 2
+					final_data[-1] = -2
 				
 				print(str_possible)
 			else:
-				final_data[-1] = 0		
+				final_data[-1] = -1		
 				
 		print(str(final_data))
 		

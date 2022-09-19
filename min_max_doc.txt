@@ -1,0 +1,74 @@
+Instructions for Use of New Min Max board:
+
+--PLOTTING--
+	Use run_minmax_rs485_plot.bat. There are two arguments you will need to change regularly:
+	1: "-n"
+		Set this to the number of connected motors plus two.
+	2: "-zp"
+		Set this to 1 if you are using an RS485 dongle, and 0 if you are using a UART dongle.
+
+--BINARY TOGGLES--
+	Enable for Basic Min Max Functionality:
+		Toggle 40: enable min max feature (otherwise it'll behave like a hand on version 2.33)
+		Toggle 42: disable calibration on startup	
+		Toggle 38: IMPORTANT! adds a quick startup check of the motor encoder.
+	Enable for Min Max Plotting over RS485:
+		Toggle 35: enable RS485
+		Toggle 16: enable UART mode
+	Other Related Toggles (not recommended except under certain specific conditions)
+		Toggle 41: disable minmax overtemp safety stop (leave at 0)
+		Toggle 27: Force high power mode
+
+
+--VALUE COMMANDS--
+	LEAVE AT ZERO UNLESS JESSE APPROVES
+	All of these commands are in floating point format. The voltage settings are casted to integers. If loaded with 0, they will override to default values.
+	Disregard the <>. Examples: 
+		Wm008:15.1234
+		Wm006:1001
+		
+	1. Set MIN Run Distance:
+		Wm007:<argument>
+			-<argument> determines the run distance in DEGREES which the motor will move during the Min run. I.e. if set to 180, it will move exactly one half rotation 
+			in the positive direction, then back to 0. Default: 360
+	2. Set MIN Run Time:
+		Wm008:<argument>
+			-<argument> determines the amount of time, in seconds, allowed for the MIN run. Default: 18.0
+	3. Set MIN Voltage Saturation:			
+		Wm009:<argument>
+			-<argument> determines the maximum possible voltage % (out of 3546) which will be allowed during the min run. If set to 500, and the supply voltage is 8.4,
+			that means the equivalent motor voltage is 1.18V. MUST BE GREATER THAN THE MIN PASS THRESH OR IT WILL ALWAYS PASS MIN NO MATTER WHAT. Default 500
+	4. Set MIN Thresh
+		Wm013:<argument>
+			-<argument> determines the maximum voltage threshold under which the motor must stay during the MIN run in order to pass. 
+
+	5. Set MAX Run Distance:
+		Wm010:<argument>
+			-<argument> determines the number of rotations moved during the max run. If 720 is sent, the DTC output shaft will move exactly two full rotations forward then two full rotations backward.
+			Default: 360
+	6. set MAX Run Time:
+		Wm011:<argument>
+			-<argument> determines the time, in seconds, that a MAX run is attempted. Default: 5.0
+	7. set MAX Voltage Saturation
+		Wm012:<argument>
+			-<argument> determines the maximum voltage % out of 3546 that the motor is allowed to use during the MAX run. Default: 1100
+	8. Set MAX Thresh:
+		Wm006:<argument> 		
+			-<argument> determines the voltage % (out of 3546) which will be set as the threshold for Max. All voltages for the max-run must be under this threshold	
+			for you to pass max and proceed to min. Floating point format (automatically floored, so only integer value is valid. (Default: 1000)
+
+--Example Usage Case: break in thumb rotators
+	[ensure calibration is enabled]
+	Wm010:60.0 		--Set range of motion to 60 degrees (all drivers assume finger DTC, so smaller ROM means faster break in)
+	Wm011:0.83 		--divide normal speed by 6 to achieve faster break in times
+	Wm006:1.00		--disable min transitions by lowering the pass thresh to an unobtainable value	
+	Wm012:750		--lower max voltage allowed during run to reduce heat buildup when it hits the extremes of its ROM
+	
+--IF YOU FUCKED IT UP AND WANT TO RESET:
+	Wo
+	We40
+	We42
+	We38
+	We35 
+	We16
+	CR

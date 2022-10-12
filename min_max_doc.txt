@@ -71,4 +71,5 @@ Instructions for Use of New Min Max board:
 	We38
 	We35 
 	We16
+	We6
 	CR

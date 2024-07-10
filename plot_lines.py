@@ -63,8 +63,8 @@ def scaleData(data):
 	
 	if scaler == "cal":
 		for i in range(0, len(data)):
-			ret_data[i] = data[i];
-			if abs(ret_data[i]) > 1.0:
+			ret_data[i] = data[i]
+			if abs(ret_data[i]) > 4096.0:
 				reset = True	
 		u = data[0]
 		thresh = data[1]

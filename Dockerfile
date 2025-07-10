@@ -9,6 +9,7 @@ WORKDIR /app
 
 # Install Python and system dependencies
 RUN apt-get update && apt-get install -y \
+    vim \
     python3 \
     python3-pip \
     python3-dev \
@@ -33,6 +34,14 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
+# GUI Reqs
+RUN apt-get update && apt-get install -y \
+    python3-tk \
+    x11-apps \
+    ffmpeg \
+    python3-pyqt5 \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy requirements first for better caching
 COPY requirements.txt .
 
@@ -47,9 +56,6 @@ COPY scripts/linux/run_calibration_plot.sh .
 
 # Make the script executable
 RUN chmod +x run_calibration_plot.sh
-
-# Set environment variable for matplotlib to use non-interactive backend
-ENV MPLBACKEND=Agg
 
 # Create a test script that simulates the calibration plot without requiring serial connection
 RUN echo '#!/bin/bash\n\
@@ -74,5 +80,5 @@ echo "Note: Real-time plotting requires a display, but dependencies are working.
 echo "To test with actual hardware, run: ./run_calibration_plot.sh"' > test_requirements.sh && \
 chmod +x test_requirements.sh
 
-# Default command to test requirements
-CMD ["./test_requirements.sh"] 
+# # Default command to test requirements
+CMD ["./app/run_calibration_plot.sh"]

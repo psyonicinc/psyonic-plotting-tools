@@ -40,10 +40,6 @@ def animate(args):
 	for i, line in enumerate(lines):
 		line.set_data(xbuf[i],ybuf[i])
 	
-	xmin = min(xbuf[0])
-	xmax = max(xbuf[0])
-	plt.setp(ax,xlim = (xmin,xmax))
-	
 	if(pf):
 		if args[-1] >= 0:
 			label.set_text("Pass: " + str(args[-1]))
@@ -53,12 +49,16 @@ def animate(args):
 			label.set_color("Red")
 		else: 
 			label.set_text("")
-		label.set_position(((xmax-xmin)/2 + xmin, text_height))
+	else:
+		label.set_text("")
 	
+	xmin = min(xbuf[0])
+	xmax = max(xbuf[0])
+	plt.setp(ax,xlim = (xmin,xmax))
+	label.set_position(((xmax-xmin)/2 + xmin, text_height))
 	ax.relim()
 	ax.autoscale_view(scalex=False, scaley=False)
 	return lines
-
 
 def plot_floats(n, width, xmax, ylim, data_gen, pass_fail):
 	
@@ -73,9 +73,8 @@ def plot_floats(n, width, xmax, ylim, data_gen, pass_fail):
 	plt.grid(color = 'grey', linestyle = '--', linewidth = 0.5)
 
 
-	if(pf):
-		text_height = (ylim[1] - ylim[0])*0.67+ylim[0]
-		label = ax.text((xmax/2),text_height, "Starting...", ha='center', va='center', fontsize=35, color="Blue")
+	text_height = (ylim[1] - ylim[0])*0.67+ylim[0]
+	label = ax.text((xmax/2),text_height, "Starting...", ha='center', va='center', fontsize=35, color="Blue")
 	
 	num_lines = n
 	bufwidth = width
@@ -97,9 +96,7 @@ def plot_floats(n, width, xmax, ylim, data_gen, pass_fail):
 			
 	tstart = time.time()
 		
-	blitVal = not pf
-	
-	anim = animation.FuncAnimation(fig, animate, init_func=init, frames=data_gen, interval=0, blit=blitVal,  save_count = 50)
+	anim = animation.FuncAnimation(fig, animate, init_func=init, frames=data_gen, interval=0, blit=False,  save_count = 50)
 	plt.show()
 	
 	

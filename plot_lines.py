@@ -63,8 +63,8 @@ def scaleData(data):
 	
 	if scaler == "cal":
 		for i in range(0, len(data)):
-			ret_data[i] = data[i];
-			if abs(ret_data[i]) > 1.0:
+			ret_data[i] = data[i]
+			if abs(ret_data[i]) > 4096.0:
 				reset = True	
 		u = data[0]
 		thresh = data[1]
@@ -100,7 +100,7 @@ def scaleData(data):
 				reset = True
 	else:
 		for num in data:
-			if abs(num) > 1e12 or abs(num) < 0.00000001:
+			if abs(num) > 1000 or abs(num) < 0.000001:
 				reset = True
 				
 	return reset, ret_data
@@ -115,14 +115,12 @@ def readSerial():
 	global checksum
 	global scaler
 	global check_pass
-	global zp_end
 	
 	parsed_data = [0.0] * (num_lines)
 	final_data = [0.0] * (2+num_lines)
 	
 	# Default for floats
-	bufferLength = int(4 * num_lines + zp_end)
-
+	bufferLength = int(4 * num_lines)
 	if parser == "12bit":
 		bufferLength = int(math.ceil((1.5 * num_lines)))
 		
@@ -185,24 +183,21 @@ def readSerial():
 		yield final_data
 		
 
-def plot_lines(baud, timeout, bufWidth, numLines, cs, xmax, ylims, scaling, parsing, discard, passmsg, pad_end):
+def plot_lines(baud, timeout, bufWidth, numLines, cs, xmax, ylims, scaling, parsing, discard, passmsg):
 	global tstart
 	global num_lines
-	global zp_end
 	global scaler
 	global parser
 	global dummy_reads
 	global checksum
 	global check_pass
 	num_lines = numLines
-	zp_end = pad_end
 	tstart = time.time()
 	scaler = scaling
 	parser = parsing
 	dummy_reads = discard
 	checksum = cs
 	check_pass = passmsg
-	
 	
 	if setupSerial(baud, timeout):
 		ser.reset_input_buffer()
@@ -227,7 +222,6 @@ if __name__ == "__main__":
 	parser.add_argument('--parser' , help="How to parse raw serial data", choices=parsingPresets, default="float")
 	parser.add_argument('--discard', type=int, help="Number of Dummy Reads to do to discard data", default=0)
 	parser.add_argument('--passfail' , help="Include flag to check for pass/fail messages", action='store_true')
-	parser.add_argument('-zp', '--zero_pad', type=int, help="number of expected zero-pad bytes at the end of the data frame",default=0)
 	args = parser.parse_args()
 	
 	## Check Validity
@@ -266,4 +260,4 @@ if __name__ == "__main__":
 	print(".")
 	
 	
-	plot_lines(args.baud, timeout, args.buffer, args.number, args.c, args.width, ytuple, args.scaler, args.parser, args.discard, args.passfail, args.zero_pad)  
+	plot_lines(args.baud, timeout, args.buffer, args.number, args.c, args.width, ytuple, args.scaler, args.parser, args.discard, args.passfail)  

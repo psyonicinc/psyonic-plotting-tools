@@ -77,24 +77,12 @@ jobs:
         path: plot-lines
         retention-days: 30
         
-    - name: Create release package (on tag)
-      if: startsWith(github.ref, 'refs/tags/')
-      run: |
-        # Create a release package with version info
-        VERSION=${GITHUB_REF#refs/tags/}
-        mkdir -p release
-        cp plot-lines release/
-        echo "Psyonic Plotting Tools v$VERSION" > release/README.txt
-        echo "Built on: $(date)" >> release/README.txt
-        echo "Commit: $GITHUB_SHA" >> release/README.txt
-        zip -r plot-lines-v$VERSION-linux.zip release/
-        
-    - name: Upload release package (on tag)
+    - name: Upload release executable (on tag)
       if: startsWith(github.ref, 'refs/tags/')
       uses: actions/upload-artifact@v4
       with:
         name: plot-lines-release-v${{ github.ref_name }}
-        path: plot-lines-v${{ github.ref_name }}-linux.zip
+        path: plot-lines
         retention-days: 90
         
     - name: Comment on PR

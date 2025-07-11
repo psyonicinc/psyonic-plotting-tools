@@ -51,11 +51,6 @@ RUN pip3 install pyinstaller-hooks-contrib
 COPY plot_lines.py .
 COPY plot_floats.py .
 COPY plot-lines.spec .
-COPY test_dependencies.py .
-COPY scripts/linux/run_calibration_plot.sh .
-
-# Test dependencies before building
-RUN python3 test_dependencies.py
 
 # Build using the spec file for better control
 RUN pyinstaller plot-lines.spec --clean

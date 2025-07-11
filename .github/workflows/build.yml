@@ -36,9 +36,16 @@ jobs:
           exit 1
         fi
         
-    - name: Upload build artifact
+    - name: Upload plot-lines executable
       uses: actions/upload-artifact@v4
       with:
         name: plot-lines
         path: plot-lines
+        retention-days: 90
+        
+    - name: Upload calibration desktop file
+      uses: actions/upload-artifact@v4
+      with:
+        name: calibration.desktop
+        path: scripts/linux/calibration.desktop
         retention-days: 90 

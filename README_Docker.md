@@ -1,109 +1,91 @@
-# Docker Container for Psyonic Plotting Tools
+# Updated Docker Build for Psyonic Plotting Tools
 
-This Docker container allows you to test the `requirements.txt` dependencies and run the calibration plot script in an isolated environment.
+## Overview
+This Dockerfile has been updated to properly handle PyInstaller builds for the plotting software that uses matplotlib animations and serial communication.
 
-## Quick Start
+## Key Improvements
 
-### Using Docker Compose (Recommended)
+### 1. Additional System Dependencies
+Added comprehensive X11 and display libraries needed for matplotlib:
+- **Graphics libraries**: `libgl1-mesa-glx`, `libxkbcommon-x11`, etc.
+- **Image format support**: `libpng16-16`, `libjpeg-turbo8`, `libtiff5`, etc.
+- **Font rendering**: `libharfbuzz0b`, `libfribidi0`, `libpango-1.0-0`, etc.
+- **GUI frameworks**: `libgtk-3-0`, `libatk1.0-0`, `libgdk-3-0`, etc.
+- **Audio/Device support**: `libasound2`, `libpulse0`, `libudev1`, `libusb-1.0-0`
+
+### 2. Enhanced Python Dependencies
+- Added `pyinstaller-hooks-contrib` for better PyInstaller compatibility
+- Updated requirements.txt with additional dependencies
+
+### 3. PyInstaller Configuration
+- Created `plot-lines.spec` file for better control over the build process
+- Added explicit hidden imports for matplotlib backends and animation
+- Included all necessary numpy and serial dependencies
+
+### 4. Dependency Testing
+- Added `test_dependencies.py` to verify all dependencies are properly installed
+- Tests run before PyInstaller build to catch issues early
+
+## Files Added/Modified
+
+### New Files:
+- `plot-lines.spec` - PyInstaller specification file
+- `test_dependencies.py` - Dependency verification script
+- `README_Docker_Updated.md` - This documentation
+
+### Modified Files:
+- `Dockerfile` - Enhanced with additional dependencies and testing
+- `requirements.txt` - Added pyinstaller-hooks-contrib
+
+## Usage
+
+### Building the Docker Image
 ```bash
-# Build and test the container
-docker-compose up --build
-
-# Or run in detached mode
-docker-compose up -d --build
+docker build -t psyonic-plotting-tools .
 ```
 
-### Using Docker directly
+### Running the Container
 ```bash
-# Build the image
-docker build -t psyonic-plotting .
-
-# Test requirements installation
-docker run --rm psyonic-plotting
-
-# Run the actual calibration plot script (requires hardware)
-docker run --rm -v /dev:/dev psyonic-plotting ./run_calibration_plot.sh
+docker run -it --rm psyonic-plotting-tools
 ```
 
-### Using Windows batch script
-```cmd
-# Run the provided batch script
-scripts\windows\build_and_test_docker.bat
-```
-
-## What the Container Does
-
-1. **Tests Dependencies**: Verifies that all packages in `requirements.txt` can be installed and imported:
-   - `pyserial==3.5`
-   - `matplotlib==3.3.2`
-   - `numpy==1.21.3`
-
-2. **Provides Runtime Environment**: Sets up a Linux environment with all necessary system dependencies for matplotlib and serial communication.
-
-3. **Enables Hardware Testing**: When connected to actual hardware, you can run the calibration plot script with real-time plotting.
-
-## Container Features
-
-- **Base Image**: Python 3.9 slim (lightweight)
-- **System Dependencies**: Includes gcc, g++, and matplotlib dependencies
-- **Volume Mounting**: Mounts `/dev` for serial port access
-- **Non-interactive Backend**: Uses `Agg` backend for matplotlib to work in headless environments
-
-## Testing Without Hardware
-
-The container includes a test script that verifies all dependencies without requiring actual hardware:
-
+### Testing Dependencies Locally
+If you want to test dependencies without building the full Docker image:
 ```bash
-docker run --rm psyonic-plotting ./test_requirements.sh
-```
-
-This will:
-- Import all required packages
-- Display version information
-- Confirm successful installation
-
-## Running with Hardware
-
-To run the actual calibration plot script with hardware:
-
-```bash
-# On Linux/macOS
-docker run --rm -v /dev:/dev --device=/dev/ttyUSB0 psyonic-plotting ./run_calibration_plot.sh
-
-# On Windows (adjust COM port as needed)
-docker run --rm -v /dev:/dev --device=/dev/ttyS0 psyonic-plotting ./run_calibration_plot.sh
+python3 test_dependencies.py
 ```
 
 ## Troubleshooting
 
-### Build Issues
-- Ensure Docker is installed and running
-- Check that all files are in the correct locations
-- Verify internet connection for downloading packages
+### Common Issues:
 
-### Runtime Issues
-- For serial communication: ensure proper device mounting
-- For plotting: the container uses non-interactive backend by default
-- For hardware access: ensure proper permissions and device mapping
+1. **Matplotlib Backend Errors**
+   - The Dockerfile now includes all necessary X11 libraries
+   - Multiple backend options are included in the spec file
 
-### Version Conflicts
-If you encounter version conflicts, you can modify the `requirements.txt` file and rebuild:
+2. **Serial Port Access**
+   - Added `libusb-1.0-0` and `libudev1` for device access
+   - Serial tools are explicitly included in hidden imports
 
+3. **Missing Dependencies**
+   - Run `test_dependencies.py` to identify specific missing modules
+   - Check the test output for detailed error messages
+
+### Debug Mode
+To build with console output for debugging:
 ```bash
-docker-compose build --no-cache
+# Modify the spec file to change console=False to console=True
+# Or use the command line version:
+pyinstaller --onefile --console --name plot-lines plot_lines.py
 ```
 
-## File Structure
+## Build Artifacts
+The PyInstaller build will create:
+- `dist/plot-lines` - The final executable
+- `build/` - Build artifacts (can be cleaned up)
+- `plot-lines.spec` - Build specification (keep for future builds)
 
-```
-psyonic-plotting-tools/
-├── Dockerfile                 # Container definition
-├── docker-compose.yml         # Docker Compose configuration
-├── requirements.txt           # Python dependencies
-├── plot_lines.py             # Main plotting script
-├── plot_floats.py            # Matplotlib plotting functions
-├── scripts/
-│   └── windows/
-│       └── build_and_test_docker.bat  # Windows build script
-└── README_Docker.md          # This file
-``` 
+## Notes
+- The build uses the `--windowed` flag to create a GUI application
+- All matplotlib backends are included to ensure compatibility across different systems
+- The spec file can be modified to customize the build process further 

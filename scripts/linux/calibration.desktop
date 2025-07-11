@@ -1,7 +1,7 @@
 [Desktop Entry]
-Name=Calibration_plot.desktop
+Name=calibration.desktop
 Comment=calibrator application clickable
-Exec=python3 ~/psyonic-plotting-tools/plot_lines.py -b 230400 -n 4 -w 50 -t 2000 --ymin -183.84 --ymax 183.84 --scaler cal --passfail
+Exec=gnome-terminal -- /bin/bash -c "python3 ~/psyonic-plotting-tools/plot_lines.py -b 230400 -n 4 -w 50 -t 2000 --ymin -183.84 --ymax 183.84 --scaler cal --passfail"
 Terminal=true
 Type=Application
 Categories=Utility;
